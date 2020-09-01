@@ -1,0 +1,268 @@
+File New Maven project
+
+search for 'quickstart' scroll to org.apache.maven.archetype
+
+com.airline
+multi-module-maven-airline
+
+
+in pom.xml make <packaging>  pom  </packaging> because this is the parent package/module of the multi-module application 
+(try "POM" if "pom" doesn't work)
+
+	<groupId>com.airline</groupId>
+    <artifactId>multi-module-maven-airline</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>  pom  </packaging>
+  
+  
+  in multi-module-maven-airline pom.xml file had to add in Java EE dependency with <scope>provided</scope> to allow the project to recognize 
+the copied packages from web8 ---- the "provided" scope allows it to recognize it, but prevents it from deploying with the Java EE dependency 
+into the .war file
+because GlassFish or whatever other container used will take care of deployment
+
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
+		</dependency>
+		
+Instructor searched for "java ee" in mvnrepository.org but I wasn't able to find it 
+  
+
+
+########################################################################################
+########################################################################################
+
+Create a sub-module
+  
+  right click on main project folder "multi-module-maven-airline" click new --> Other...
+  
+  search maven and select Maven Module
+  
+  search for 'quickstart' scroll to org.apache.maven.archetype
+  
+  call it 'models'
+  
+  com.airline
+  module name is "models"
+  
+  make sure 
+
+  
+  Group Id: com.airline
+  Artifact Id: models
+  
+  Package: com.airline (this was not the default)
+  
+  
+  the models module has it's own pom.xml file and contains a reference to its parent multi-module-maven-airline
+  
+  <parent>
+    <artifactId>multi-module-maven-airline</artifactId>
+    <groupId>com.airline</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.airline</groupId>
+  <artifactId>models</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  
+  >>> add <packaging>jar</packaging> here
+  
+  So 2 pom.xml files
+
+###########################################################################################
+###########################################################################################
+
+in models/src/main/java/com.airline - we deleted the default App.java and copy/pasted in JAXRS1/JavaResources/src/com.airline.models into /com.airline
+
+
+##########################################
+##########################################
+
+
+Create a sub-module
+  
+  right click on main project folder "multi-module-maven-airline" click new --> Other...
+  
+  call it 'maven-airline-webapp'
+  
+  search maven and select Maven Module
+  
+  search for 'WEBAPP' scroll to org.apache.maven.archetype
+  
+  com.airline
+  module name is "maven-airline-webapp"
+  
+  make sure 
+
+  
+  Group Id: com.airline
+  Artifact Id: maven-airline-webapp
+  
+  Package: com.airline (this was not the default)
+
+
+in maven-airline-webapp pom.xml file - <packaging> should be "war"
+
+
+had to right click on maven-airline-webapp/src/main and create new folder "java"
+
+this creates src/main/java under "Java Resources"
+
+inside src/main/java - create new package "com.airline"
+
+in that package "com.airline" copy/pasted in 
+
+	> com.airline.controllers  
+	> com.airline.service
+	> com.airline.webservices.rest
+	
+	packages from JAXRS1 project    ---> (but not com.airline.models, that goes in a separate package)
+	
+	
+####################################################################
+####################################################################
+
+Since we want the maven-airline-webapp sub-module to reference the models sub-module, we need to add a dependency in the maven-airline-webapp pom.xml file
+  
+  So maven-airline-webapp pom.xml now looks like this:
+  
+  	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+
+		</dependency>
+
+		<dependency>
+			<groupId>com.airline</groupId>
+			<artifactId>models</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+
+		</dependency>
+	</dependencies>
+ 
+ 
+  now the maven-airline-webapp submodule can "see" and "access" the models package in submodule models
+  
+  ##############################################################################################################
+  ##############################################################################################################
+  
+  __________________________________________________
+ | Operations in maven-airline-webapp   sub-module	|
+ |__________________________________________________|
+  
+  
+  Delete --> index.jsp    @ maven-airline-webapp/src/main/webapp/index.jsp = not needed
+  
+  
+  copied "views" folder from JAXRS1/WebContent/WEB-INF into maven-airline-webapp/src/main/webapp/WEB-INF
+	
+	copied "resources" folder (css styles) from JAXRS1/WebContent/ into maven-airline-webapp/src/main/webapp
+
+>>> create new folder maven-airline-webapp/src/main/resources
+
+	copied "META-INF" folder from JAXRS1/JavaResources/src/META-INF into maven-airline-webapp/src/main/resources  --> NOT UNDER WEBAPP, UNDER MAIN
+	
+			>>> This META-INF folder contains the persistence.xml file that allows objects to persist and be passed between
+			>>> the different classes, beans and servlets
+			
+	updated the "web.xml" file in maven-airline-webapp/src/main/webapp/WEB-INF/web.xml because the default Maven version is too old
+	
+			>>> https://mkyong.com/web-development/the-web-xml-deployment-descriptor-examples/
+			
+			>>> 1. Servlet 3.1 deployment descriptor
+	
+				Java EE 7 XML schema, namespace is http://xmlns.jcp.org/xml/ns/javaee/
+				web.xml
+				
+				copy and paste below into web.xml - this is the only code needed in web.xml, nothing else 
+				
+				<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+				         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+						 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+				         version="3.1">
+				</web-app>
+		
+		
+
+NOTE* Nothing in the WEB-INF folder is accessible by the browser, it can only be called to within the web app by servlets
+- this is why resources/css is not placed in WEB-INF, as it would be unreachable
+  
+  
+  
+ ####################################################################### 
+
+
+
+ ______________________________
+ DEPLOYMENT
+ 
+ First right click parent project "multi-module-maven-airline" --> Run As.. --> Maven Clean
+ 
+ Then right click parent project "multi-module-maven-airline" --> Run As.. --> Run Configurations...
+ 
+ 		>>> set work space as the parent --> "multi-module-maven-airline"
+ 		
+ 		>>> set goal as "package"
+
+
+once done - open each module pom.xml file so eclipse can help itself
+
+okay to remove <groupId> and <version>  in model pom.xml and maven-airline-webapp pom.xml IF Eclipse if giving an error on it
+
+right click GlassFish4 server and add/remove "maven-airline-webapp" module
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+MAKE SURE TO START THE DERBY DATABASE in glassfish/javadb/bin/startNetworkServer before running
+
+		>>> Fri Jun 26 02:53:46 CDT 2020 : Security manager installed using the Basic server security policy.
+		>>> Fri Jun 26 02:54:03 CDT 2020 : Apache Derby Network Server - 10.10.2.0 - (1582446) 
+		                                   started and ready to accept connections on port 1527
+
+--
+make sure to restart the server before deploying 
+
+
+published to GlassFish to confirm working -- http://localhost:8080/maven-airline/FancyFormsServlet -- successful!
+
+
+
+####################################################################################################################################
+####################################################################################################################################
+
+
+
+
