@@ -3,4 +3,9 @@
 .settings
 .idea
 
-/target
+
+
+
+
+.settings/
+*/target/*
